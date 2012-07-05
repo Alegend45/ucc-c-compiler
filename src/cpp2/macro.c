@@ -83,17 +83,11 @@ void filter_macro(char **pline)
 	if(!**pline)
 		return; /* optimise for empty lines also */
 
-	for(iter = macros; iter && *iter; iter++)
-		(*iter)->used_in_loop = 0;
-
 	substitute_here = *pline;
 
 	for(iter = macros; iter && *iter; iter++){
 		macro *m = *iter;
 		int did_replace = 0;
-
-		if(m->used_in_loop)
-			continue;
 
 		if(m->type != MACRO){
 			char *s, *last;
@@ -109,7 +103,7 @@ void filter_macro(char **pline)
 				continue;
 
 relook:
-			open_b  = strchr(pos, '(');
+			open_b = strchr(pos, '(');
 			if(!open_b){
 				/* ignore the macro */
 				pos++;
@@ -233,13 +227,13 @@ tok_fin:
 			}
 
 			free(replace);
-
 			did_replace = 1;
 		}else{
 			int is_counter = 0;
 			static int counter = 0; /* __COUNTER__ */
 			char *val;
 			int fval = 0;
+			int did_replace;
 
 			if(m->val){
 				val = m->val;
@@ -273,9 +267,6 @@ tok_fin:
 				substitute_here = *pline;
 			else
 				substitute_here++;
-
-			if(did_replace)
-				m->used_in_loop = 1;
 
 			if(is_counter && did_replace)
 				counter++;
